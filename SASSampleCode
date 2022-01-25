@@ -1,0 +1,76 @@
+*Waleed Masoud SAS Code *;
+
+*Step 1: Setting Up a Library and importing dataset;
+libname hw5 "/home/u35545849/STATM2021" ;
+
+proc import out= hw5.BP90s
+	datafile = "/home/u35545849/STATM2021/90sBabyPitchers.xlsx"
+	dbms = xlsx replace;
+	getnames = yes;
+run;
+
+proc print data = hw5.BP90s;
+run;
+
+*Step 2: New Variables based on birthPlace: birthcity, birthstate, birthcountry;
+data hw5.BP90s;
+	set hw5.BP90s;
+	birthcity=scan(birthplace,1,",");
+	birthstate=scan(birthplace,2,",");
+	birthcountry=scan(birthplace,3,",");
+run;
+data hw5.BP90s;
+	set hw5.BP90s;
+	birthcity=strip(birthcity);
+	birthstate=strip(birthstate);
+	birthcountry=strip(birthcountry);
+run;
+proc print data = hw5.BP90s;
+run;
+*Step 3: Subset for if born in GA or FL;
+data hw5.BP90sGAFL;
+	set hw5.BP90s;
+	where birthstate = "GA" or birthstate = "FL";
+run;
+proc print data = hw5.BP90sGAFL;
+run;
+
+ods pdf file="/home/u35545849/STATM2021/outputGAFL.pdf";
+*Step 4: 5 num sum for ERA, BAopp, SO, and BB by birthstate (GA or FL);
+	*ONLY GA AND FL;
+Proc means data= hw5.BP90sGAFL n min q1 median q3 max;
+	var ERA BAopp SO BB;
+	class birthstate;
+run;
+*Step 5: Correlation between ERA and BAopp by birthstate (GA or FL);
+	*ONLY GA AND FL;
+proc sort data=hw5.BP90sGAFL;
+	by birthstate;
+run;
+proc corr data=hw5.BP90sGAFL;
+	var ERA BAopp;
+	by birthstate;
+run;
+
+ods pdf close;
+
+
+ods pdf file="/home/u35545849/STATM2021/outputALL.pdf";
+*Step 4: 5 num sum for ERA, BAopp, SO, and BB by ALL birthstate;
+	* ALL STATES;
+Proc means data= hw5.bp90s n min q1 median q3 max;
+	var ERA BAopp SO BB;
+	class birthstate;
+run;
+
+*Step 5: Correlation between ERA and BAopp by ALLbirthstate;
+	* ALL STATES;
+proc sort data=hw5.bp90s;
+	by birthstate;
+run;
+proc corr data=hw5.bp90s;
+	var ERA BAopp;
+	by birthstate;
+run;
+
+ods pdf close;
